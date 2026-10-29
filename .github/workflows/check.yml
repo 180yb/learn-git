@@ -1,0 +1,39 @@
+name: 检查主页
+
+# 什么时候自动跑
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:   # 也可以在网页 Actions 页手动点一下
+
+jobs:
+  check:
+    name: 检查 index.html
+    runs-on: ubuntu-latest   # 跑在一台免费提供的 Linux 机器上
+
+    steps:
+      - name: 取代码
+        uses: actions/checkout@v4
+
+      - name: 看仓库里有什么
+        run: |
+          echo "当前目录："
+          ls -la
+          test -f index.html
+          echo "✓ index.html 存在"
+
+      - name: 检查有没有标题
+        run: |
+          if grep -q "<title>" index.html; then
+            echo "✓ 找到了 <title>，页面结构正常"
+          else
+            echo "✗ 没找到 <title>，页面可能有问题"
+            exit 1
+          fi
+
+      - name: 量一下体积
+        run: |
+          echo "页面大小：$(wc -c < index.html) 字节"
+          echo "提交：${{ github.sha }}"
+          echo "触发者：${{ github.actor }}"
